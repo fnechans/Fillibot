@@ -1,5 +1,13 @@
+TTS
+discord.py
+openai
 requests-html
 bs4
 urllib3
-discord.py
 python-dotenv
+yt-dlp
+PyNaCl
+transformers>=4.30
+scikit_learn>=1.1
+pandas>=1.0
+matplotlib>3.7

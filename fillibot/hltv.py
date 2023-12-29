@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
 from urllib.request import urlopen, HTTPError, Request
-from .utils import get_log, omluva
 from http.client import IncompleteRead
 
+from .utils import get_log, omluva
 
 log = get_log()
 
@@ -25,7 +25,7 @@ def _get_html(
 
         r.html.render()  # this call executes the js in the page
         return r.html.text
-    except IncompleteRead as e: 
+    except IncompleteRead as e:
         html = e.partial.decode('utf-8')
 
     return html
@@ -34,25 +34,33 @@ def _get_html(
 def _get_team(team_name: str) -> str:
     html = _get_html(f'https://www.hltv.org/search?query={team_name}')
     soup = BeautifulSoup(html, 'html.parser')
-    matches = [a.get('href') for a in soup.find_all('a')
-               if len(a.get_attribute_list('href'))==1 
-                   and team_name in str(a.get('href'))
-                   and '/team/' in str(a.get('href'))] 
+    matches = [
+        a.get('href')
+        for a in soup.find_all('a')
+        if len(a.get_attribute_list('href')) == 1
+        and team_name in str(a.get('href'))
+        and '/team/' in str(a.get('href'))
+    ]
     if len(matches) > 1:
         log.warning(f'Multiple {team_name} found, picking first one from:')
         log.warning(matches)
         return matches[0]
     if len(matches) == 0:
         log.warning(f'Team {team_name} not found')
-        log.info([a.get('href') for a in soup.find_all('a')
-               if len(a.get_attribute_list('href'))==1 
-                   and '/team/' in str(a.get('href'))] )
+        log.info(
+            [
+                a.get('href')
+                for a in soup.find_all('a')
+                if len(a.get_attribute_list('href')) == 1
+                and '/team/' in str(a.get('href'))
+            ]
+        )
         return ''
 
-    return matches[0] 
+    return matches[0]
 
 
-def hltv_upcoming(team_name: str) -> str:
+def upcoming(team_name: str) -> str:
     team_id = _get_team(team_name.lower().rstrip())
     if team_id == '':
         return f'Nemuzu najit {team_name}'
@@ -66,10 +74,10 @@ def hltv_upcoming(team_name: str) -> str:
 
     if len(matches) > 1:
         log.error(f'Multiple match boxes? {url}')
-        return omluva() 
+        return omluva()
     if len(matches) == 0:
         log.error(f'No match box? {url}')
-        return omluva() 
+        return omluva()
 
     matches_categories = matches[0].find_all(
         'table', {'class': ['table-container', 'match table']}
